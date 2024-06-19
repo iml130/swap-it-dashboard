@@ -1,0 +1,12 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: swap-it-dashboard
+Upstream-Contact:
+Source: https://github.com/iml130/swap-it-dashboard
+
+Files: static/img/*
+Copyright: The SWAP-IT Dashboard Contributors
+License: CC-BY-4.0
+
+Files: docs/*.png
+Copyright: The SWAP-IT Dashboard Contributors
+License: CC-BY-4.0

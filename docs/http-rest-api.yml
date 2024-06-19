@@ -1,0 +1,195 @@
+# SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors
+# SPDX-License-Identifier: MIT
+
+openapi: 3.0.1
+info:
+  title: SWAP-IT Dashboard Backend HTTP REST API
+  description: |-
+    - Stateless
+    - Easy
+    - Open for Extensions
+
+  contact:
+    email: maximilian.hoerstrup@iml.fraunhofer.de
+  version: 1.0.0
+
+tags:
+  - name: pfdl_order
+    description: Create, update and receive PFDL orders
+  - name: petri_net
+    description: Send status updates of the Petri Net
+  - name: log_event
+    description: Send status updates of the Scheduler
+
+paths:
+  /pfdl_order:
+    post:
+      tags:
+        - pfdl_order
+      summary: Creates or updates a new order
+      description: Creates or updates a new order by Id
+      responses:
+        "200":
+          description: Successful operation
+
+    get:
+      tags:
+        - pfdl_order
+      summary: Get all orders
+      description: Get all orders
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PFDLOrder"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/PFDLOrder"
+  /pfdl_order/{order_id}:
+    get:
+      tags:
+        - pfdl_order
+      summary: Get order by id
+      description: Get order by id
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          description: The id of the order to retrieve
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PFDLOrder"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/PFDLOrder"
+  /petri_net:
+    post:
+      tags:
+        - petri_net
+      summary: Submit a new petri net
+      description: Submit a new petri net
+      requestBody:
+        description: Update an existent pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PetriNet"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/PetriNet"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PetriNet"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+  /log_event:
+    post:
+      tags:
+        - log_event
+      summary: Submit a new log entry
+      description: Submit a new log entry
+      requestBody:
+        description: Update an existent pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogEvent"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/LogEvent"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/LogEvent"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+
+components:
+  schemas:
+    PFDLOrder:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: id of the order as uuid
+          example: 8bf4eb6a-74df-427c-a475-532392465f70
+        starting_date:
+          type: integer
+          description: Timestamp of the start of the order
+          example: 1676541619.191237
+        last_update:
+          type: integer
+          description: Timestamp of the last update
+          example: 1676541619.191237
+        status:
+          type: integer
+          description: The status of the order representes as integer.
+          example: 0
+      xml:
+        name: order
+    PetriNet:
+      type: object
+      properties:
+        order_id:
+          type: string
+          description: id of the corresponding order as uuid
+          example: 8bf4eb6a-74df-427c-a475-532392465f70
+        content:
+          type: string
+          description: representation of the petri net (type is specified by `type_pn`)
+          example: digraph {...}
+        type_pn:
+          type: integer
+          example: dot
+          enum:
+            - dot
+            - png
+      xml:
+        name: customer
+    LogEvent:
+      type: object
+      properties:
+        order_id:
+          type: string
+          description: id of the corresponding order as uuid
+          example: 8bf4eb6a-74df-427c-a475-532392465f70
+        log_date:
+          type: integer
+          description: timestamp of the date of the log entry.
+          example: 1676541619.191237
+        log_message:
+          type: string
+          description: Content of the log entry
+          example: Task started...
+        log_level:
+          type: integer
+          description: The level of the log event correspondig to https://docs.python.org/3/library/logging.html#logging-levels
+          example: 20
+      xml:
+        name: customer
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

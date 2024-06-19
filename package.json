@@ -1,0 +1,27 @@
+{
+  "name": "swap_it_dashboard",
+  "version": "1.0.0",
+  "description": "This project provides a graphical user interface to display production orders created with the Production FLow Description Language",
+  "main": "templates/base.html",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "type": "module",
+  "scripts": {
+    "browserify": "browserify ./static/js/parse_dot.js -o ./static/js/dotparser_worker.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "browserify": "^17.0.0",
+    "dotparser": "^1.1.1",
+    "eslint": "^9.4.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.4.0",
+    "prettier": "^3.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.4.0"
+  }
+}

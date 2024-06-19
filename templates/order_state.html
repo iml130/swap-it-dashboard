@@ -1,0 +1,222 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+{% extends "base.html" %} {% set active_page = "" %} {% block JAVASCRIPT %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"
+></script>
+<script
+  type="text/javascript"
+  src="{{ url_for('static',filename='js/petri_net_helper.js')}}"
+></script>
+<script>
+  const dotWorker = new Worker("../static/js/dotparser_worker.js");
+  const petriNetInfos = new PetriNetInfos(
+    "{{order.order_id}}",
+    true,
+    dotWorker
+  );
+
+  $(document).ready(function () {
+    //connect to the socket server.
+    var socket = io.connect(
+      "http://" + document.domain + ":" + location.port + "/pfdl"
+    );
+
+    // receive data to create a new Petri Net for the active order
+    socket.on("new_petri_net", async function (msg) {
+      // eventually draw a new Petri Net (if no other is currently drawn)
+      onUpdateMessageReceived(msg, petriNetInfos);
+    });
+
+    //receive details from server
+    socket.on("new_log_event", function (msg) {
+      if (msg["log_event"]["order_id"] == "{{order.order_id}}") {
+        var date = new Date(msg["log_event"]["log_date"] * 1000).toLocaleString(
+          "en-GB"
+        );
+        $("#dataTable")
+          .DataTable()
+          .row.add([
+            date,
+            msg["log_event"]["log_message"],
+            logLevelToText(msg["log_event"]["log_level"])
+          ])
+          .draw(false);
+      }
+    });
+
+    socket.on("remove_pfdl_order", function (msg) {
+      if (msg.pfdl_order["order_id"] == "{{order.order_id}}") {
+        document.getElementById("petriNetLink").href =
+          "/order_history/{{order.order_id}}/petri_net";
+
+        new_item = '<div class="alert alert-success" role="alert">';
+        new_item += "The Order is finished!";
+        new_item += "</div>";
+        $("#alert").append(new_item);
+      }
+    });
+  });
+
+  window.onload = async function () {
+    // when page is loaded, show the current petri net
+    const currentDotContent = $("#graphElementsDiv").text();
+
+    if (currentDotContent.includes("digraph")) {
+      // trigger the creation of the current Petri Net by sending a mock message containing the Petri Net content
+      const mockMessage = {
+        order_id: "{{order.order_id}}",
+        content: currentDotContent,
+        type_pn: "dot"
+      };
+      onUpdateMessageReceived(mockMessage, petriNetInfos);
+    }
+  };
+</script>
+{% endblock %} {% block contentSubTitle %}Order State{% endblock %} {% block
+contentTitle %} Order {{order.order_id}}{% endblock %} {% block content %}
+<div id="codeVisuImg" style="display: none"></div>
+<div id="alert"></div>
+<div class="container">
+  <div class="row">
+    <div>
+      <div class="accordion" id="accordion_1">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="panel_1">
+            <button
+              class="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#panelsStayOpen-collapseOne"
+              aria-expanded="true"
+              aria-controls="panelsStayOpen-collapseOne"
+            >
+              Current Petri Net
+            </button>
+          </h2>
+          <div
+            id="panelsStayOpen-collapseOne"
+            class="accordion-collapse collapse show"
+            aria-labelledby="panelsStayOpen-headingOne"
+          >
+            <div class="accordion-body">
+              {% if order.status != 4 %}
+              <a
+                id="petriNetLink"
+                href="/order_state/{{order.order_id}}/petri_net"
+                >View Fullscreen</a
+              >
+              {% else %}
+              <a
+                id="petriNetLink"
+                href="/order_history/{{order.order_id}}/petri_net"
+                >View Fullscreen</a
+              >
+              {% endif %}
+              <div
+                style="width: 100%; height: 100%; z-index: 2; opacity: 0"
+              ></div>
+            </div>
+            <div id="cyContainer" style="max-height: 50vh; overflow: auto">
+              <div id="cy" style="visibility: hidden"></div>
+            </div>
+            <div id="graphElementsDiv" style="display: none">
+              {{img_data|safe}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br />
+<div class="row">
+  <div class="col-md-8">
+    <div class="accordion" id="accordion_3">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="panel_3">
+          <button
+            class="accordion-button"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#panelsStayOpen-collapseThree"
+            aria-expanded="true"
+            aria-controls="panelsStayOpen-collapseThree"
+          >
+            Event Log
+          </button>
+        </h2>
+        <div
+          id="panelsStayOpen-collapseThree"
+          class="accordion-collapse collapse show"
+          aria-labelledby="panelsStayOpen-headingThree"
+        >
+          <div class="accordion-body">
+            <table id="dataTable" class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">Time</th>
+                  <th scope="col">Message</th>
+                  <th scope="col">Level</th>
+                </tr>
+              </thead>
+              <tbody id="log">
+                {% for value in order.log %}
+                <tr>
+                  <td>{{value.log_date|get_date_from_timestamp}}</td>
+                  <td>{{value.log_message}}</td>
+                  {% if value.log_level == 10 %}
+                  <td>DEBUG</td>
+                  {% elif value.log_level == 20 %}
+                  <td>INFO</td>
+                  {% elif value.log_level == 30 %}
+                  <td>WARNING</td>
+                  {% elif value.log_level == 40 %}
+                  <td>ERROR</td>
+                  {% else %}
+                  <td>CRITICAL</td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="accordion" id="accordion_2">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="headingTwo">
+          <button
+            class="accordion-button collapsed"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapseTwo"
+            aria-expanded="false"
+            aria-controls="collapseTwo"
+          >
+            PFDL Code of the Order
+          </button>
+        </h2>
+        <div
+          id="collapseTwo"
+          class="accordion-collapse collapse"
+          aria-labelledby="headingTwo"
+          data-bs-parent="#accordionExample"
+        >
+          <div class="accordion-body">
+            <pre><code>
+{{order.pfdl_string}}
+                </code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

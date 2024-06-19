@@ -1,0 +1,175 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+<!--- the order overview page -->
+
+{% extends "base.html" %} {% set active_page = "order_overview" %} {% block
+JAVASCRIPT %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"
+></script>
+<script>
+  $(document).ready(function () {
+    //connect to the socket server.
+    var socket = io.connect(
+      "http://" + document.domain + ":" + location.port + "/pfdl"
+    );
+
+    jQuery.fn.sortDivs = function sortDivs() {
+      $("> div", this[0]).sort(dec_sort).appendTo(this[0]);
+      function dec_sort(a, b) {
+        return $(b).data("sort") > $(a).data("sort") ? 1 : -1;
+      }
+    };
+
+    //receive details from server
+    socket.on("pfdl_order", function (msg) {
+      if (document.getElementById(msg.pfdl_order["order_id"])) {
+        document.getElementById(msg.pfdl_order["order_id"]).remove();
+      }
+      new_item =
+        '<div class = "col-12 col-md-12 col-lg-4 col-xl-4" data-sort="' +
+        msg.pfdl_order["last_update"] +
+        '" id="' +
+        msg.pfdl_order["order_id"] +
+        '"">';
+      new_item += '<div class="card">';
+      new_item += createHtmlStatus(msg.pfdl_order["status"]);
+      new_item +=
+        "   <strong>Order: " +
+        msg.pfdl_order["order_id"] +
+        "</strong> |  Status: " +
+        statusToText(msg.pfdl_order["status"]);
+      new_item += "  </div>";
+      new_item += '  <div class="card-body">';
+      new_item += '   <p class="card-text">Latest Log Messages:</p>';
+      new_item +=
+        '  <ul id="latest_messages_' + msg.pfdl_order["order_id"] + '">';
+      msg.last_messages.forEach((item, index) => {
+        new_item +=
+          '<small class="text-muted "> <li class="add-read-more show-less-content">';
+        item = JSON.parse(item);
+        new_item += item["log_message"];
+        new_item += "</small></li>";
+      });
+      new_item += "  </ul>";
+      new_item +=
+        '   <p class="card-text"><small class="text-muted">Started: ' +
+        new Date(msg.pfdl_order["starting_date"] * 1000).toLocaleString(
+          "en-GB"
+        ) +
+        "<br />Last update: " +
+        new Date(msg.pfdl_order["last_update"] * 1000).toLocaleString("en-GB") +
+        "</small></p>";
+      new_item +=
+        '   <p class="card-text"><small class="text-muted"><a href="/order_state/' +
+        msg.pfdl_order["order_id"] +
+        '"">Details</a></small</p>';
+      new_item += "  </div>";
+      new_item += "</div> <br />";
+      new_item += " </div>";
+      $("#main_content").append(new_item);
+
+      if (document.getElementById("noOrdersText")) {
+        document.getElementById("noOrdersText").hidden = true;
+      }
+
+      $("#main_content").sortDivs();
+    });
+
+    socket.on("new_log_event", function (msg) {
+      new_item = "";
+      msg.last_messages.forEach((element) => {
+        element = JSON.parse(element);
+        new_item +=
+          '<small class="text-muted "> <li class="add-read-more show-less-content">' +
+          element.log_message +
+          "</li></small>";
+      });
+      document.getElementById(
+        "latest_messages_" + msg.log_event["order_id"]
+      ).innerHTML = new_item;
+    });
+
+    socket.on("remove_pfdl_order", function (msg) {
+      if (document.getElementById(msg.pfdl_order["order_id"])) {
+        document.getElementById(msg.pfdl_order["order_id"]).remove();
+
+        new_item =
+          '<div class="alert alert-success alert-dismissible fade show" role="alert">';
+        new_item += "Order " + msg.pfdl_order["order_id"] + " is finished!";
+        new_item +=
+          '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">';
+        new_item += "</button>";
+        new_item += "</div>";
+        document.getElementById("alert").innerHTML = "";
+        $("#alert").append(new_item);
+      }
+    });
+  });
+</script>
+
+{% endblock %} {% block contentSubTitle %}Dashboard{% endblock %} {% block
+contentTitle %}Order Overview{% endblock %} {% block content %}
+<div id="alert"></div>
+<br />
+
+{% if orders|length == 0 %}
+<div id="noOrdersText">
+  <h1>There are no Orders</h1>
+</div>
+{% endif %}
+
+<div class="row" id="main_content">
+  {% for value in orders.values()|sort(attribute="last_update",reverse=True) %}
+  <div class="col-12 col-md-12 col-lg-4 col-xl-4" id="{{value.order_id}}">
+    <div class="card">
+      {% if value.status == 1 %}
+      <div class="card-header bg-info">
+        <strong>Order: {{value.order_id}}</strong> | Status: Created {% elif
+        value.status == 2 %}
+        <div class="card-header bg-warning">
+          <strong>Order: {{value.order_id}}</strong> | Status: Started {% elif
+          value.status == 3 %}
+          <div class="card-header bg-secondary">
+            <strong>Order: {{value.order_id}}</strong> | Status: Paused {% else
+            %}
+            <div class="card-header bg-danger">
+              <strong>Order: {{value.order_id}}</strong> | Status: Finished {%
+              endif %}
+            </div>
+            <div class="card-body">
+              <p class="card-text">Latest Log Messages:</p>
+              <ul id="latest_messages_{{value.order_id}}">
+                {% for log in value.getLatestLogMessages(3) %}
+                <small class="text-muted">
+                  <li class="add-read-more show-less-content">
+                    {{log.log_message}}
+                  </li>
+                </small>
+                {% endfor %}
+              </ul>
+              <p class="card-text">
+                <small class="text-muted"
+                  >Started: {{value.starting_date|get_date_from_timestamp}}<br />Last
+                  update: {{value.last_update|get_date_from_timestamp}}</small
+                >
+              </p>
+              <p class="card-text">
+                <small class="text-muted"
+                  ><a href="/order_state/{{value.order_id}}">Details</a></small
+                >
+              </p>
+            </div>
+          </div>
+          <br />
+        </div>
+        {% endfor %}
+      </div>
+
+      {% endblock %}
+    </div>
+  </div>
+</div>

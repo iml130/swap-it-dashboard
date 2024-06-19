@@ -1,0 +1,5 @@
+# SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors
+# SPDX-License-Identifier: CC0-1.0
+
+node_modules/**
+bundle.js

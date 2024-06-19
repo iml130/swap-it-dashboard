@@ -1,0 +1,72 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+<!-- the petri net fullscreen page -->
+
+{% extends "base.html" %} {% set active_page = "" %} {% block JAVASCRIPT %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"
+></script>
+<script src="{{ url_for('static',filename='js/petri_net_helper.js')}}"></script>
+
+<script>
+  const dotWorker = new Worker("../../static/js/dotparser_worker.js");
+  const petriNetInfos = new PetriNetInfos(
+    "{{order.order_id}}",
+    false,
+    dotWorker
+  );
+
+  $(document).ready(function () {
+    //connect to the socket server.
+    var socket = io.connect(
+      "http://" + document.domain + ":" + location.port + "/pfdl"
+    );
+
+    // receive data to create a new Petri Net for the active order
+    socket.on("new_petri_net", async function (msg) {
+      // eventually draw a new Petri Net (if no other is currently drawn)
+      onUpdateMessageReceived(msg, petriNetInfos);
+    });
+
+    socket.on("remove_pfdl_order", function (msg) {
+      if (msg.pfdl_order["order_id"] == "{{order.order_id}}") {
+        document.getElementById("backLink").href =
+          "/order_history/{{order.order_id}}";
+
+        new_item = '<div class="alert alert-success" role="alert">';
+        new_item += "The Order is finished!";
+        new_item += "</div>";
+        $("#alert").append(new_item);
+      }
+    });
+  });
+  window.onload = function () {
+    // when page is loaded, show the current petri net
+    const currentDotContent = $("#graphElementsDiv").text();
+
+    if (currentDotContent.includes("digraph")) {
+      // trigger the creation of the current Petri Net by sending a mock message containing the Petri Net content
+      const mockMessage = {
+        order_id: "{{order.order_id}}",
+        content: currentDotContent,
+        type_pn: "dot"
+      };
+      onUpdateMessageReceived(mockMessage, petriNetInfos);
+    }
+  };
+</script>
+{% endblock %} {% block contentSubTitle %} {% if order.status != 4 %}
+<a id="backLink" , href="/order_state/{{order.order_id}}">Back</a>
+{% else %}
+<a id="backLink" , href="/order_history/{{order.order_id}}">Back</a>
+{% endif %} {% endblock %} {% block content %}
+<div id="alert"></div>
+<div id="graphElementsDiv" style="display: none">{{img_data|safe}}</div>
+<div id="cy">
+  <canvas id="myCanvas"></canvas>
+</div>
+
+{% endblock %}

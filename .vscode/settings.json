@@ -1,0 +1,15 @@
+// SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors
+// SPDX-License-Identifier: MIT
+
+{
+  "eslint.enable": true,
+  "eslint.validate": ["javascript", "typescript"],
+
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

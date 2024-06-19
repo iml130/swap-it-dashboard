@@ -1,0 +1,13 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+<!-- contains an image describing the dashboard architecture in more detail -->
+
+{% extends "base.html" %} {% set active_page = "about" %} {% block
+contentSubTitle %}About{% endblock %} {% block contentTitle %}Dashboard for the
+Production Flow Description Language{% endblock %} {% block content %}
+<img
+  src="{{ url_for('static', filename='img/pfdl_architecture_overview.png')}}"
+  width="50%"
+/>
+{% endblock %}

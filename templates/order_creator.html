@@ -1,0 +1,256 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+{% extends "base.html" %} {% set active_page = "order_creator" %} {% block
+JAVASCRIPT %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"
+></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+  type="text/javascript"
+></script>
+<script>
+  //default PFDL for editing
+  //HOWTO UPDATE TEMPLATE:
+  //0. Add your replace tokens $1$, $2$ for order specific fields ... see modifyPFDLTemplate()
+  //2. Add line numbers to your PFDL with (https://www.browserling.com/tools/number-lines)
+  //3. Escape the whole file with https://www.freeformatter.com/javascript-escape.html#before-output and paste it in pfdl_template.
+  var pfdl_template =
+    '1: Struct SWAP_Order\r\n2:     order_id:number\r\n3:     stand:Stand_segment\r\n4:     segments: Light_Segment[]\r\n5:     number_light_segments: number\r\n6: End\r\n7: # {1000, {cylinder, 100, 1}, [{red, 75, 1}, {blue, 75, 2}], 2}\r\n8: \r\n9: Struct Stand_segment\r\n10:     stand_shape:string\r\n11:     stand_height:number\r\n12:     stand_id:string\r\n13: End\r\n14: \r\n15: Struct Light_Segment\r\n16:     color: string\r\n17:     diameter: number\r\n18:     segment_id:string\r\n19: End\r\n20: \r\n21: Struct Raw_material\r\n22:     blanks:Blank[]\r\n23:     blank_number:number\r\n24: End\r\n25: \r\n26: # {[{segment, 1000_1_raw_segment, 1}, {segment, 1000_2_raw_segment, 2}, {stand, 1000_1_raw_stand}, {connector, 1000_raw_connector}]}\r\n27: \r\n28: Struct Blank\r\n29:     blank_type:string\r\n30:     blank_id: string\r\n31:     part_id:number\r\n32: End\r\n33: \r\n34: #Parallel\r\n35: #    Parallel Loop\r\n36: #        for order.segments\r\n37: #            warehouse\r\n38: #            coat\r\n39: #    warehouse(blank for stand)\r\n40: #    mill\r\n41: #    warehouse(connector)\r\n42: #mount()\r\n43: \r\n44: \r\n45: \r\n46: Task productionTask\r\n47: \r\n48:     #deriveBlankFromOrder\r\n49:     #    In\r\n50:     #        order\r\n51:     #    Out\r\n52:     #        raw_material\r\n53:     #        order\r\n54: \r\n55: \r\n56:     get_segment_Task\r\n57:         In\r\n58:             SWAP_Order\r\n59:             {\r\n60:                 "order_id":$1$,\r\n61:                 "stand":{\r\n62:                     "stand_shape":"$2$",\r\n63:                     "stand_height":3,\r\n64:                     "stand_id": "0"\r\n65:                 },\r\n66:                 "segments": \r\n67: \t\t\t\t$3$\r\n68:                 [\r\n69:                 {\r\n70:                     "color": "red",\r\n71:                     "diameter": 5,\r\n72:                     "segment_id": "0"\r\n73:                 },\r\n74:                 {\r\n75:                     "color": "green",\r\n76:                     "diameter": 5,\r\n77:                     "segment_id": "0"\r\n78:                 }\r\n79:                 ],\r\n80:                 "number_light_segments": $4$\r\n81:             }\r\n82:             Raw_material\r\n83:             {\r\n84:                 "blanks":\r\n85:                 [\r\n86:                     {\r\n87:                         "blank_type":"light_segment",\r\n88:                         "blank_id": "0",\r\n89:                         "part_id":1\r\n90: \r\n91:                     },\r\n92:                     {\r\n93:                         "blank_type":"light_segment",\r\n94:                         "blank_id": "0",\r\n95:                         "part_id":2\r\n96: \r\n97:                     },\r\n98:                     {\r\n99:                         "blank_type":"connector",\r\n100:                         "blank_id": "0",\r\n101:                         "part_id":1\r\n102: \r\n103:                     },\r\n104:                     {\r\n105:                         "blank_type":"stand",\r\n106:                         "blank_id": "0",\r\n107:                         "part_id":1\r\n108: \r\n109:                     }\r\n110:                 ],\r\n111:                 "blank_number":4\r\n112:             }\r\n113: End\r\n114: \r\n115: Task get_segment_Task\r\n116:     In\r\n117:         order: SWAP_Order\r\n118:         blanks: Raw_material\r\n119: \r\n120:     #Loop count i to blanks.blank_number\r\n121:     #    GetPartsFromWarehouse\r\n122:     #        In\r\n123:     #            blanks.blank[i]\r\n124:     #        Out\r\n125:     #            blanks.blank\r\n126: \r\n127:     Parallel Loop i To order.number_light_segments\r\n128:         #Condition\r\n129:         #    raw_materia.blanks[i].blank_id == order.segments[i].blank_id\r\n130:         warehouse_Output\r\n131:             In\r\n132:                 order\r\n133:                 blanks\r\n134: End\r\n135: \r\n136: Task warehouse_Output\r\n137:     In\r\n138:         order: SWAP_Order\r\n139:         blanks: Raw_material\r\n140:     GetPartsFromWarehouse\r\n141:         In\r\n142:             order\r\n143:             blanks\r\n144:         Out\r\n145:             order:SWAP_Order\r\n146: End\r\n';
+
+  // Create a client instance
+  client = new Paho.MQTT.Client("test.mosquitto.org", 8080, "clienasdtId");
+
+  // set callback handlers
+  client.onConnectionLost = onConnectionLost;
+  client.onMessageArrived = onMessageArrived;
+
+  // connect the client
+  client.connect({ onSuccess: onConnect });
+
+  // called when the client connects
+  function onConnect() {
+    // Once a connection has been made, make a subscription and send a message.
+    console.log("onConnect");
+    //client.subscribe("World");
+    message = new Paho.MQTT.Message("Hello");
+    message.destinationName = "swap/order/hmi";
+    client.send(message);
+  }
+
+  // called when the client loses its connection
+  function onConnectionLost(responseObject) {
+    if (responseObject.errorCode !== 0) {
+      console.log("onConnectionLost:" + responseObject.errorMessage);
+    }
+  }
+
+  // called when a message arrives
+  function onMessageArrived(message) {
+    console.log("onMessageArrived:" + message.payloadString);
+  }
+
+  document.addEventListener("DOMContentLoaded", function (event) {
+    //set a default value for the orderId
+    document.getElementById("order_id").value = Math.floor(
+      Math.random() * 10000
+    );
+    document.getElementById("pfdl_pre").textContent = "Waiting for new order!";
+  });
+
+  function modifyPFDLTemplate(order) {
+    console.log("modifyPFDLTemplate function triggered!");
+    pfdl_copy = pfdl_template.replace("$1$", order["orderId"].toString());
+    pfdl_copy = pfdl_copy.replace("$2$", order["order_stand_shape"]);
+    //ToDo Here we need to generate the complete PFDL segment array syntax
+    pfdl_copy = pfdl_copy.replace("$3$", order["segments"].toString());
+    pfdl_copy = pfdl_copy.replace("$4$", order["number_segments"].toString());
+    return pfdl_copy;
+  }
+
+  function createOrder() {
+    console.log("Create order pressed!");
+    var elem_pre_pfdl = document.getElementById("pfdl_pre");
+
+    //get order parameters
+    var order_id = document.getElementById("order_id").value;
+    var order_stand_shape = document.getElementById("order_stand_shape").value;
+    var order_segment_1 = document.getElementById("order_segment_1").value;
+    var order_segment_2 = document.getElementById("order_segment_2").value;
+    var order_segment_3 = document.getElementById("order_segment_3").value;
+    var order_segment_4 = document.getElementById("order_segment_4").value;
+    var order_segment_5 = document.getElementById("order_segment_5").value;
+
+    var segments_arr = [];
+    var uglyCounter = 0;
+    if (order_segment_1 != "None") {
+      uglyCounter++;
+      segments_arr.push(order_segment_1);
+    }
+    if (order_segment_2 != "None") {
+      uglyCounter++;
+      segments_arr.push(order_segment_2);
+    }
+    if (order_segment_3 != "None") {
+      uglyCounter++;
+      segments_arr.push(order_segment_3);
+    }
+    if (order_segment_4 != "None") {
+      uglyCounter++;
+      segments_arr.push(order_segment_4);
+    }
+    if (order_segment_5 != "None") {
+      uglyCounter++;
+      segments_arr.push(order_segment_5);
+    }
+
+    var order = {
+      orderId: Number(order_id),
+      order_stand_shape: order_stand_shape,
+      number_segments: Number(uglyCounter),
+      segments: segments_arr
+    };
+    var adjusted_pfdl = modifyPFDLTemplate(order);
+
+    elem_pre_pfdl.textContent = adjusted_pfdl;
+
+    message = new Paho.MQTT.Message(adjusted_pfdl);
+    message.destinationName = "swap/order/hmi";
+    client.send(message);
+  }
+
+  function resetOrder() {
+    console.log("Reset order pressed!");
+
+    var elem_pre_pfdl = document.getElementById("pfdl_pre");
+    elem_pre_pfdl.textContent = "No order configured.";
+
+    document.getElementById("order_stand_shape").value = "Cross";
+    document.getElementById("order_segment_1").value = "None";
+    document.getElementById("order_segment_2").value = "None";
+    document.getElementById("order_segment_3").value = "None";
+    document.getElementById("order_segment_4").value = "None";
+    document.getElementById("order_segment_5").value = "None";
+    document.getElementById("order_id").value = Math.floor(
+      Math.random() * 10000
+    );
+  }
+</script>
+{% endblock %} {% block contentSubTitle %}Dashboard{% endblock %} {% block
+contentTitle %}Order Creator{% endblock %} {% block content %}
+<div class="row">
+  <div class="col-md-5">
+    <strong
+      >Order Configuration | Product Type: Industrial Traffic Light</strong
+    >
+    <br />
+    <br />
+    <form>
+      <div class="form-group">
+        <label for="order_id">Order Number</label>
+        <!-- ToDo generate random number as default! -->
+        <input type="number" class="form-control" id="order_id" />
+      </div>
+      <div class="form-group">
+        <label for="order_stand_shape">Stand Shape</label>
+        <select class="form-control" id="order_stand_shape">
+          <option>Cross</option>
+          <option>Polygon</option>
+          <option>Triangle</option>
+        </select>
+      </div>
+      <!--          <div class="form-group">
+              &lt;!&ndash; ToDo use dynamic range to add related segment color fields &ndash;&gt;
+            <label for="customRange3" class="form-label">Number of Light Segments</label>
+            <input type="range" class="form-range" min="0" max="5" step="1" id="customRange3">
+          </div>-->
+      <div class="form-group">
+        <label for="order_segment_1">Segment Color 1</label>
+        <select class="form-control" id="order_segment_1">
+          <option>None</option>
+          <option>red</option>
+          <option>green</option>
+          <option>yellow</option>
+          <option>blue</option>
+          <option>light_red</option>
+          <option>light_yellow</option>
+          <option>light_green</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="order_segment_2">Segment Color 2</label>
+        <select class="form-control" id="order_segment_2">
+          <option>None</option>
+          <option>red</option>
+          <option>green</option>
+          <option>yellow</option>
+          <option>blue</option>
+          <option>light_red</option>
+          <option>light_yellow</option>
+          <option>light_green</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="order_segment_3">Segment Color 3</label>
+        <select class="form-control" id="order_segment_3">
+          <option>None</option>
+          <option>red</option>
+          <option>green</option>
+          <option>yellow</option>
+          <option>blue</option>
+          <option>light_red</option>
+          <option>light_yellow</option>
+          <option>light_green</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="order_segment_4">Segment Color 4</label>
+        <select class="form-control" id="order_segment_4">
+          <option>None</option>
+          <option>red</option>
+          <option>green</option>
+          <option>yellow</option>
+          <option>blue</option>
+          <option>light_red</option>
+          <option>light_yellow</option>
+          <option>light_green</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="order_segment_5">Segment Color 5</label>
+        <select class="form-control" id="order_segment_5">
+          <option>None</option>
+          <option>red</option>
+          <option>green</option>
+          <option>yellow</option>
+          <option>blue</option>
+          <option>light_red</option>
+          <option>light_yellow</option>
+          <option>light_green</option>
+        </select>
+      </div>
+      <br />
+    </form>
+    <button
+      onclick="createOrder()"
+      id="submitButton"
+      class="btn btn-primary btn-block"
+    >
+      Submit Order
+    </button>
+    <button onclick="resetOrder()" class="btn btn-secondary btn-block">
+      Reset Order
+    </button>
+  </div>
+  <div class="col-md-7">
+    <strong>Resulting PFDL</strong>
+    <br />
+    <br />
+    <pre id="pfdl_pre"></pre>
+  </div>
+</div>
+
+{% endblock %}

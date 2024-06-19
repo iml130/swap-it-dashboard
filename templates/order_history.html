@@ -1,0 +1,54 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+{% extends "base.html" %} {% set active_page = "order_history" %} {% block
+JAVASCRIPT %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"
+></script>
+<script>
+  $(document).ready(function () {
+    //connect to the socket server.
+    var socket = io.connect(
+      "http://" + document.domain + ":" + location.port + "/pfdl"
+    );
+
+    //receive details from server
+    socket.on("remove_pfdl_order", function (msg) {
+      var date = new Date(msg.pfdl_order["last_update"] * 1000).toLocaleString(
+        "en-GB"
+      );
+      link =
+        '<a href="/order_history/' +
+        msg.pfdl_order["order_id"] +
+        '">Details</a>';
+      $("#order-history-table")
+        .DataTable()
+        .row.add([msg.pfdl_order["order_id"], date, link])
+        .draw(false);
+    });
+  });
+</script>
+{% endblock %} {% block contentSubTitle %}Dashboard{% endblock %} {% block
+contentTitle %}Order History{% endblock %} {% block content %}
+<table id="order-history-table" class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th scope="col">Order</th>
+      <th scope="col">Finished Date</th>
+      <th scope="col">Info</th>
+    </tr>
+  </thead>
+  <tbody id="log">
+    {% for key, value in orders.items() %}
+    <tr>
+      <td>{{value.order_id}}</td>
+      <td>{{value.last_update|get_date_from_timestamp}}</td>
+      <td><a href="/order_history/{{value.order_id}}">Details</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

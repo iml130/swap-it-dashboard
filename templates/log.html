@@ -1,0 +1,72 @@
+<!-- SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors -->
+<!-- SPDX-License-Identifier: MIT -->
+
+<!-- the event log page -->
+
+{% extends "base.html" %} {% set active_page = "event_log" %} {% block
+JAVASCRIPT %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.0/socket.io.min.js"
+></script>
+<script>
+  $(document).ready(function () {
+    //connect to the socket server.
+    var socket = io.connect(
+      "http://" + document.domain + ":" + location.port + "/pfdl"
+    );
+
+    //receive details from server
+    socket.on("new_log_event", function (msg) {
+      var date = new Date(msg["log_event"]["log_date"] * 1000).toLocaleString(
+        "en-GB"
+      );
+      $("#dataTable")
+        .DataTable()
+        .row.add([
+          date,
+          msg["log_event"]["order_id"],
+          msg["log_event"]["log_message"],
+          logLevelToText(msg["log_event"]["log_level"])
+        ])
+        .draw(false);
+    });
+  });
+</script>
+
+{% endblock %} {% block contentSubTitle %}Dashboard{% endblock %} {% block
+contentTitle %}Event Log{% endblock %} {% block content %}
+
+<table id="dataTable" class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th scope="col">Time</th>
+      <th scope="col">Order</th>
+      <th scope="col">Value</th>
+      <th scope="col">Level</th>
+    </tr>
+  </thead>
+  <tbody id="log">
+    {% for key, value in orders.items()%} {% for entry in value.log %}
+    <tr>
+      <td>{{entry.log_date|get_date_from_timestamp}}</td>
+      <td>{{value.order_id}}</td>
+      <td>{{entry.log_message}}</td>
+      {% if entry.log_level == 10 %}
+      <td>DEBUG</td>
+      {% elif entry.log_level == 20 %}
+      <td>INFO</td>
+      {% elif entry.log_level == 30 %}
+      <td>WARNING</td>
+      {% elif entry.log_level == 40 %}
+      <td>ERROR</td>
+      {% else %}
+      <td>CRITICAL</td>
+      {% endif %}
+    </tr>
+    {% endfor %} {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

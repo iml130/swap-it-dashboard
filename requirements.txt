@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors
+# SPDX-License-Identifier: CC0-1.0
+
+bleach
+Flask==2.2.2
+Flask-SocketIO==5.3.2
+Werkzeug==2.2.2

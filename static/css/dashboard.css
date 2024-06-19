@@ -1,0 +1,239 @@
+/* SPDX-FileCopyrightText: The SWAP-IT Dashboard Contributors */
+/* SPDX-License-Identifier: MIT */
+
+html {
+  height: 100%;
+}
+
+body {
+  font-size: 0.875rem;
+  height: 100%;
+  background-color: #f8f9fa;
+}
+
+main {
+  padding: 15px;
+}
+
+/*
+   * Sidebar
+   */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  /* rtl:raw:
+    right: 0;
+    */
+  bottom: 0;
+  /* rtl:remove */
+  left: 0;
+  z-index: 100;
+  /* Behind the navbar */
+  padding: 58px 0 0;
+  /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(75, 75, 85, 0.2);
+  background-color: white;
+}
+
+.sidebar li .submenu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (max-width: 767.98px) {
+  .offcanvas-collapse {
+    position: fixed;
+    top: 56px;
+    /* Height of navbar */
+    bottom: 0;
+    width: 100%;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    overflow-y: auto;
+    background-color: var(--gray-dark);
+    transition: -webkit-transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out;
+    transition:
+      transform 0.3s ease-in-out,
+      -webkit-transform 0.3s ease-in-out;
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+
+  .offcanvas-collapse.open {
+    -webkit-transform: translateX(-1rem);
+    transform: translateX(-1rem);
+    /* Account for horizontal padding on navbar */
+  }
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #313a46;
+}
+
+.sidebar .nav-link.active {
+  color: #2470dc;
+}
+
+.sidebar-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+/*
+   * Navbar
+   */
+.navbar {
+  box-shadow: inset 0 -1px 0 rgba(75, 75, 85, 0.2);
+}
+
+.navbar-brand {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-size: 1.1rem;
+  color: white;
+  /* background-color: #313a46;; */
+}
+
+.navbar .navbar-toggler {
+  top: 0.25rem;
+  right: 1rem;
+}
+
+.navbar .form-control {
+  padding: 0.75rem 1rem;
+  border-width: 0;
+  border-radius: 0;
+}
+
+.centered-element {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
+/*
+   * Order Cards
+   */
+
+.card-columns {
+  @include media-breakpoint-only(lg) {
+    column-count: 4;
+  }
+
+  @include media-breakpoint-only(xl) {
+    column-count: 5;
+  }
+}
+
+#noOrdersText {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* .accordion-button.collapsed {
+    background: blue
+  }
+  
+  .accordion-button.collapsed::after {
+    background: green;
+  } */
+
+pre {
+  background-color: #eee;
+  overflow: auto;
+  margin: 0 0 1em;
+  padding: 0.5em 1em;
+}
+
+pre code,
+pre .line-number {
+  /* Ukuran line-height antara teks di dalam tag <code> dan <span class="line-number"> harus sama! */
+  font:
+    normal normal 12px/14px "Courier New",
+    Courier,
+    Monospace;
+  color: black;
+  display: block;
+}
+
+pre .line-number {
+  float: left;
+  margin: 0 1em 0 -1em;
+  border-right: 1px solid;
+  text-align: right;
+}
+
+pre .line-number span {
+  display: block;
+  padding: 0 0.5em 0 1em;
+}
+
+pre .cl {
+  display: block;
+  clear: both;
+}
+
+.add-read-more.show-less-content .second-section,
+.add-read-more.show-less-content .read-less {
+  display: none;
+}
+
+.add-read-more.show-more-content .read-more {
+  display: none;
+}
+
+.add-read-more .read-more,
+.add-read-more .read-less {
+  font-weight: bold;
+  margin-left: 2px;
+  color: blue;
+  cursor: pointer;
+}
+
+:root {
+  --component-started-color: #f58220;
+  --component-finished-color: #a6bbc8;
+  --component-done-color: #b2d235;
+  --statement-passed-color: #669db2;
+  --statement-failed-color: #bb0056;
+  --statement-entry-color: #d3c7ae;
+  --task-box-color: #ffffff;
+  --service-box-color: #ccdee5;
+  --condition-box-color: #39c1cd;
+  --loop-box-color: #fdb913;
+  --parallel-box-color: #179c7d;
+  --error-button-color: #e1523d;
+}
+
+.container {
+  max-width: 100%;
+}
+
+#cy {
+  width: 100%;
+  height: 85vh;
+  display: block;
+  background-color: white;
+  border: 1px solid black;
+  overflow: scroll;
+  position: relative;
+}
+
+#myCanvas {
+  position: absolute;
+  width: 15%;
+  min-width: 100px;
+  top: 0;
+  right: 0;
+  background-color: #e4d2d2;
+  opacity: 85%;
+  border-radius: 15px;
+  z-index: 2;
+  border: 2px solid black;
+}
