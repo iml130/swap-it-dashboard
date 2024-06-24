@@ -17,7 +17,7 @@ SWAP-IT Dashboard
 <div align="left">
 
 The SWAP-IT Dashboard is a visualization and management tool for an Order Controlled Production.
-This tool can visualize Orders that are described by the Production Flow Description Language (PFDL).
+This tool can visualize orders that are described by the Production Flow Description Language (PFDL).
 
 ## Table of Contents
 
@@ -45,12 +45,12 @@ Once an order is finished, it is removed from the order overview, but kept in a 
 
 ### Order Creator
 
-Create a new Order with customly defined options using the integrated Order Creator.
+Create a new order with customly defined options using the integrated Order Creator.
 ![Order Creator](docs/order_creator.png)
 
-### Detailed Order view
+### Detailed Order View
 
-Show detailed information about a specific Order (either active or finished) in the Order State view. All received logs are listed here. Furthermore, a graphical presentation of the corresponding PFDL program as well as the underlying PFDL code are visible here.
+Show detailed information about a specific order (either active or finished) in the Order State View. All received logs are listed here. Furthermore, a graphical presentation of the corresponding PFDL program as well as the underlying PFDL code are visible here.
 
 ![Order State Petri Net](docs/order_state_petri_net.png)
 
@@ -64,7 +64,7 @@ In addition to the static Petri Net view in the order state, a full screen mode 
 
 ## Install
 
-There are some requirements that need to be installed before using the dashboard:
+There are some requirements that need to be installed before using the Dashboard:
 
 - [Python](https://www.python.org/) (>= v3.10)
 - Pip packages from [requirements.txt](requirements.txt) (install with `pip install -r requirements.txt`)
@@ -74,7 +74,7 @@ After installing the requirements, install the included NPM packages via `npm in
 
 The SWAP-IT Dashboard uses the code provided by the [PFDL VS Code Extension](https://github.com/iml130/pfdl-vscode-extension) to create and visualize Petri Nets. To enable this, you need to go to the repository's [release page](https://github.com/iml130/pfdl-vscode-extension/releases), select the latest release and download the _bundle.js_ file provided there. This file needs to be copied to the _static/js_ directory.
 
-After following the steps above, the dashboard is ready to go!
+After following the steps above, the Dashboard is ready to go!
 
 ## Usage
 
@@ -87,11 +87,11 @@ npm run browserify && python3 application.py
 After startup, the server log contains the host address.
 Now, the Dashboard can be used inside a browser of your choice.
 
-To create Orders, Log Entries or new PetriNet images, a tool like JMeter or Postman is recommended, so dummy requests can be send to the application.
+To create orders, log entries or new Petri Net images, a tool like JMeter or Postman is recommended, so dummy requests can be send to the application.
 
 ## Testing
 
-To test the dashboard with some examplary requests, run the provided test collection that can be found in the [test directory](test). To load it into Postman, simply click on the "Import" button and select the .json file. The tests can be executed aftwerwards by clicking the "Run" button in the "Collections" tab.
+To test the Dashboard with some examplary requests, run the provided test collection that can be found in the [test directory](test). To load it into Postman, simply click on the "Import" button and select the .json file. The tests can be executed afterwards by clicking the "Run" button in the "Collections" tab.
 
 ## Release Notes
 
