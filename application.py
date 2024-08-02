@@ -22,7 +22,7 @@ app.config["DEBUG"] = False
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = -1
 
 # turn the flask app into a socketio app
-socketio = SocketIO(app, async_mode="threading", logger=True, engineio_logger=True)
+socketio = SocketIO(app, async_mode="eventlet", logger=True, engineio_logger=True)
 
 # random number Generator Thread
 thread = Thread()
@@ -271,4 +271,4 @@ def new_log_entry():
 
 
 if __name__ == "__main__":
-    socketio.run(app, port=8080, host='0.0.0.0', allow_unsafe_werkzeug=True)
+    socketio.run(app, port=8080, host="0.0.0.0")
