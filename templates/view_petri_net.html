@@ -32,7 +32,7 @@
     });
 
     socket.on("remove_pfdl_order", function (msg) {
-      if (msg.pfdl_order["order_id"] == "{{order.order_id}}") {
+      if (msg.pfdl_order["order_uuid"] == "{{order.order_id}}") {
         document.getElementById("backLink").href =
           "/order_history/{{order.order_id}}";
 

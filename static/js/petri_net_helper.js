@@ -128,7 +128,7 @@ const fitGraphAsImage = async function () {
 };
 
 const createPetriNet = async function (msg, petriNetInfos) {
-  if (msg["order_id"] != petriNetInfos.orderId) {
+  if (msg["order_uuid"] != petriNetInfos.orderId) {
     return;
   }
   // enable the graph creation code to access the dotstring and tree structure
@@ -155,7 +155,7 @@ const onPetriNetDrawn = async function (petriNetInfos) {
 };
 
 const onUpdateMessageReceived = function (msg, petriNetInfos) {
-  if (msg["order_id"] != petriNetInfos.orderId) {
+  if (msg["order_uuid"] != petriNetInfos.orderId) {
     return;
   }
   // check if another petri net is currently drawn

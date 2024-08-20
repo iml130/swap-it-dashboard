@@ -158,8 +158,8 @@ def new_order():
     # global order_dict
     pfdl_order = json.loads(request.data)
 
-    if pfdl_order["order_id"] in order_dict:
-        po = order_dict[pfdl_order["order_id"]]
+    if pfdl_order["order_uuid"] in order_dict:
+        po = order_dict[pfdl_order["order_uuid"]]
         po.starting_date = pfdl_order["starting_date"]
         po.last_update = pfdl_order["last_update"]
         po.status = pfdl_order["status"]
@@ -182,7 +182,7 @@ def new_order():
             socketio.emit("remove_pfdl_order", {"pfdl_order": pfdl_order}, namespace="/pfdl")
     else:
         po = PfdlOrder(
-            pfdl_order["order_id"],
+            pfdl_order["order_uuid"],
             pfdl_order["starting_date"],
             pfdl_order["last_update"],
             pfdl_order["status"],
@@ -227,7 +227,7 @@ def get_pfdl_order_by_id(order_id):
 def update_petri_net():
     record = json.loads(request.data)
 
-    order_id = record["order_id"]
+    order_id = record["order_uuid"]
     pn = PetriNet(order_id, record["content"], record["type_pn"])
 
     if order_id in order_dict:
@@ -246,9 +246,9 @@ def update_petri_net():
 @app.route("/log_event/", methods=["POST"])
 def new_log_entry():
     log_event = json.loads(request.data)
-    order_id = log_event["order_id"]
+    order_id = log_event["order_uuid"]
     l_e = LogEvent(
-        log_event["order_id"],
+        log_event["order_uuid"],
         log_event["log_date"],
         log_event["log_message"],
         log_event["log_level"],

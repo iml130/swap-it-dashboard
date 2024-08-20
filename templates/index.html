@@ -26,27 +26,27 @@ JAVASCRIPT %}
 
     //receive details from server
     socket.on("pfdl_order", function (msg) {
-      if (document.getElementById(msg.pfdl_order["order_id"])) {
-        document.getElementById(msg.pfdl_order["order_id"]).remove();
+      if (document.getElementById(msg.pfdl_order["order_uuid"])) {
+        document.getElementById(msg.pfdl_order["order_uuid"]).remove();
       }
       new_item =
         '<div class = "col-12 col-md-12 col-lg-4 col-xl-4" data-sort="' +
         msg.pfdl_order["last_update"] +
         '" id="' +
-        msg.pfdl_order["order_id"] +
+        msg.pfdl_order["order_uuid"] +
         '"">';
       new_item += '<div class="card">';
       new_item += createHtmlStatus(msg.pfdl_order["status"]);
       new_item +=
         "   <strong>Order: " +
-        msg.pfdl_order["order_id"] +
+        msg.pfdl_order["order_uuid"] +
         "</strong> |  Status: " +
         statusToText(msg.pfdl_order["status"]);
       new_item += "  </div>";
       new_item += '  <div class="card-body">';
       new_item += '   <p class="card-text">Latest Log Messages:</p>';
       new_item +=
-        '  <ul id="latest_messages_' + msg.pfdl_order["order_id"] + '">';
+        '  <ul id="latest_messages_' + msg.pfdl_order["order_uuid"] + '">';
       msg.last_messages.forEach((item, index) => {
         new_item +=
           '<small class="text-muted "> <li class="add-read-more show-less-content">';
@@ -65,7 +65,7 @@ JAVASCRIPT %}
         "</small></p>";
       new_item +=
         '   <p class="card-text"><small class="text-muted"><a href="/order_state/' +
-        msg.pfdl_order["order_id"] +
+        msg.pfdl_order["order_uuid"] +
         '"">Details</a></small</p>';
       new_item += "  </div>";
       new_item += "</div> <br />";
@@ -89,17 +89,17 @@ JAVASCRIPT %}
           "</li></small>";
       });
       document.getElementById(
-        "latest_messages_" + msg.log_event["order_id"]
+        "latest_messages_" + msg.log_event["order_uuid"]
       ).innerHTML = new_item;
     });
 
     socket.on("remove_pfdl_order", function (msg) {
-      if (document.getElementById(msg.pfdl_order["order_id"])) {
-        document.getElementById(msg.pfdl_order["order_id"]).remove();
+      if (document.getElementById(msg.pfdl_order["order_uuid"])) {
+        document.getElementById(msg.pfdl_order["order_uuid"]).remove();
 
         new_item =
           '<div class="alert alert-success alert-dismissible fade show" role="alert">';
-        new_item += "Order " + msg.pfdl_order["order_id"] + " is finished!";
+        new_item += "Order " + msg.pfdl_order["order_uuid"] + " is finished!";
         new_item +=
           '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">';
         new_item += "</button>";
