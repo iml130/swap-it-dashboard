@@ -78,7 +78,7 @@ After following the steps above, the Dashboard is ready to go!
 
 ## Usage
 
-To start the Dashboard from VS Code, just select and start the _Application_ debug script. To run the Dashboard using the command line, execute the following commands:
+To start the Dashboard from VS Code, just select and start the _SWAP-IT Dashboard_ debug script. To run the Dashboard using the command line, execute the following commands:
 
 ```
 npm run browserify && python3 application.py
