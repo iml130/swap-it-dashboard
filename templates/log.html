@@ -26,7 +26,7 @@ JAVASCRIPT %}
         .DataTable()
         .row.add([
           date,
-          msg["log_event"]["order_id"],
+          msg["log_event"]["order_uuid"],
           msg["log_event"]["log_message"],
           logLevelToText(msg["log_event"]["log_level"])
         ])

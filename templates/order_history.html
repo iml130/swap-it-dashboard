@@ -22,11 +22,11 @@ JAVASCRIPT %}
       );
       link =
         '<a href="/order_history/' +
-        msg.pfdl_order["order_id"] +
+        msg.pfdl_order["order_uuid"] +
         '">Details</a>';
       $("#order-history-table")
         .DataTable()
-        .row.add([msg.pfdl_order["order_id"], date, link])
+        .row.add([msg.pfdl_order["order_uuid"], date, link])
         .draw(false);
     });
   });

@@ -33,7 +33,7 @@
 
     //receive details from server
     socket.on("new_log_event", function (msg) {
-      if (msg["log_event"]["order_id"] == "{{order.order_id}}") {
+      if (msg["log_event"]["order_uuid"] == "{{order.order_id}}") {
         var date = new Date(msg["log_event"]["log_date"] * 1000).toLocaleString(
           "en-GB"
         );
@@ -49,7 +49,7 @@
     });
 
     socket.on("remove_pfdl_order", function (msg) {
-      if (msg.pfdl_order["order_id"] == "{{order.order_id}}") {
+      if (msg.pfdl_order["order_uuid"] == "{{order.order_id}}") {
         document.getElementById("petriNetLink").href =
           "/order_history/{{order.order_id}}/petri_net";
 
@@ -68,7 +68,7 @@
     if (currentDotContent.includes("digraph")) {
       // trigger the creation of the current Petri Net by sending a mock message containing the Petri Net content
       const mockMessage = {
-        order_id: "{{order.order_id}}",
+        order_uuid: "{{order.order_id}}",
         content: currentDotContent,
         type_pn: "dot"
       };
